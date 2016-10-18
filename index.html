@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans" />
+        <link rel="stylesheet" type="text/css" href="css/style.css" />
+        <link rel="stylesheet" media="screen" type="text/css" href="css/colorpicker.css" />
+
+        <title>jSketch</title>
+    </head>
+
+
+    <body>
+        <header>
+            <h1>jSketch</h1>
+
+            <div id="settingsContainer">
+                <div class="row1">
+                    <div class="col1">
+                        <label for="sqrtN">sqrt(N):</label>
+                        <input type="text" name="sqrtN" id="sqrtN">
+                    </div>
+                </div>
+
+                <div class="row2">
+                    <div class="col1">
+                        <label for="colorBox">Color:</label>
+                    </div>
+                    <div class="col2">
+                        <div class="colorBox" id="colorBox"></div>
+                    </div>
+                    <div class="col3">
+                        <input type="checkbox" name="randomColor" id="randomColor" value="randomColor">
+                        <label for="randomColor">Random</label>
+                    </div>
+                </div>
+
+                <div class="row3">
+                    <div class="col1">
+                        <label for="opacity">Opacity:</label>
+                        <input type="text" name="opacity" id="opacity">
+                    </div>
+                    <div class="col2">
+                        <button type="button" id="clearButton">Clear</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section>
+            <div id="sketchContainer">
+                <!--  <div class="sketchPixel"></div>  EXAMPLE -->
+            </div>
+        </section>
+
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+        <script type="text/javascript" src="js/colorpicker.js"></script>
+        <script type="text/javascript" src="js/script.js"></script>
+    </body>
+</html>
