@@ -11,61 +11,63 @@
 
 
 function SketchPixel() {
-    var $this = $("<div class='sketchPixel'></div>");
+    this.$this = $("<div class='sketchPixel'></div>");
 
-    $this.css("height", "calc(100% / " + Settings.SqrtN + ")");
-    $this.css("width",  "calc(100% / " + Settings.SqrtN + ")");
+    this.$this.css("height", "calc(100% / " + Settings.SqrtN + ")");
+    this.$this.css("width",  "calc(100% / " + Settings.SqrtN + ")");
 
 
-    $this.mouseenter(this, function(event) {
+    this.$this.mouseenter(this, function(event) {
         // event.data is the 'this' pixelObject passed on to mouseenter()
         event.data.paint();
     });
+}
 
 
-    this.cssElement = function() {
-        return $this;
-    };
+SketchPixel.prototype.cssElement = function() {
+    return this.$this;
+};
 
 
-    this.delete = function() {
-        $this.remove();
-    };
+SketchPixel.prototype.delete = function() {
+    this.$this.remove();
+};
     
 
-    this.setColor = function(color) {
-        $this.paintCSS(color);
+SketchPixel.prototype.setColor = function(color) {
+    this.$this.paintCSS(color);
+};
+
+
+SketchPixel.prototype.paint = function() {
+    if (Settings.RandomModeActive) {
+        /* Override the selected color with a random color */
+        Settings.Color.r = getRandomIntInclusive(0, 255);
+        Settings.Color.g = getRandomIntInclusive(0, 255);
+        Settings.Color.b = getRandomIntInclusive(0, 255);
+
+        /* Apply it to the colorBox */
+        $("#colorBox").paintCSS(Object.assign({}, Settings.Color, {a:1}));
     }
 
-
-    this.paint = function() {
-        if (Settings.RandomModeActive) {
-            /* Override the selected color with a random color */
-            Settings.Color.r = getRandomIntInclusive(0, 255);
-            Settings.Color.g = getRandomIntInclusive(0, 255);
-            Settings.Color.b = getRandomIntInclusive(0, 255);
-
-            /* Apply it to the colorBox */
-            $("#colorBox").paintCSS(Object.assign({}, Settings.Color, {a:1}));
-        }
-
-        /* Get the current pixel color */
-        var pixelCSS = $this.css("background-color");
-        var rgbaArray = pixelCSS.match(/[0-9]+/g);
-        var currentPixelColor = {
-            r: rgbaArray[0],
-            g: rgbaArray[1],
-            b: rgbaArray[2],
-            a: (rgbaArray[3] !== undefined) ? rgbaArray[3] : 1,
-        };
-
-        /* Mix the current pixel color with the new one */
-        var mixture = mixRGBA(currentPixelColor, Settings.Color);
-
-        /* Apply the color mixture to the CSS element */
-        $this.paintCSS(mixture);
+    /* Get the current pixel color */
+    var pixelCSS = this.$this.css("background-color");
+    var rgbaArray = pixelCSS.match(/[0-9]+/g);
+    var currentPixelColor = {
+        r: rgbaArray[0],
+        g: rgbaArray[1],
+        b: rgbaArray[2],
+        a: (rgbaArray[3] !== undefined) ? rgbaArray[3] : 1,
     };
-}
+
+    /* Mix the current pixel color with the new one */
+    var mixture = mixRGBA(currentPixelColor, Settings.Color);
+
+    /* Apply the color mixture to the CSS element */
+    this.$this.paintCSS(mixture);
+};
+
+
 
 
 function getRandomIntInclusive(min, max) {

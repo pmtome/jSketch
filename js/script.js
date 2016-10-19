@@ -120,7 +120,7 @@ $.fn.pressEnter = function(fn) {
             }
         })
     });  
- };
+};
 
 
 function rgb2hex(rgb) {

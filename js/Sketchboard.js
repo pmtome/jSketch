@@ -4,27 +4,27 @@
 
 
 function Sketchboard($sketchContainer) {
-    var $this = $sketchContainer;
-    var pixels = [];
-
-
-    this.addPixel = function(pixel) {
-        pixels.push(pixel);
-        $this.append(pixel.cssElement());
-    }
-
-
-    this.deletePixels = function() {
-        for (var i = 0; i < pixels.length; i++) {
-            pixels[i].delete();
-        }
-        pixels = [];
-    }
-
-
-    this.setPixelsColor = function(color) {
-        for (var i = 0; i < pixels.length; i++) {
-            pixels[i].setColor(color);
-        }
-    }
+    this.$this = $sketchContainer;
+    this.pixels = [];
 }
+
+
+Sketchboard.prototype.addPixel = function(pixel) {
+    this.pixels.push(pixel);
+    this.$this.append(pixel.cssElement());
+};
+
+
+Sketchboard.prototype.deletePixels = function() {
+    for (var i = 0; i < this.pixels.length; i++) {
+        this.pixels[i].delete();
+    }
+    this.pixels = [];
+};
+
+
+Sketchboard.prototype.setPixelsColor = function(color) {
+    for (var i = 0; i < this.pixels.length; i++) {
+        this.pixels[i].setColor(color);
+    }
+};
