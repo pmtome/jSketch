@@ -1,50 +1,63 @@
-var DEFAULT_SQRT_N = 16;
-var DEFAULT_PIXEL_RGBA = {r:255, g:255, b:255, a:1};
-var DEFAULT_PAINTBRUSH_RGBA = {r:0, g:0, b:0, a:0.33};
-var DEFAULT_RANDOM_STATE = false;
+// Author:    Pedro Tomé
+// URL:       https://github.com/pmtome
+// Copyright: Free software. Give credit. Don't steal.
 
-var RANDOM_MODE_ACTIVE = DEFAULT_RANDOM_STATE;
+
+var DEFAULT_SQRT_N = 16;
+var DEFAULT_PIXEL_COLOR = {r:255, g:255, b:255, a:1};
+var DEFAULT_SELECTED_COLOR = {r:0, g:0, b:0, a:0.33};
+var DEFAULT_RANDOM_MODE_STATE = false;
+
+
+var Settings = {
+    SqrtN: DEFAULT_SQRT_N,
+    Color: Object.assign({}, DEFAULT_SELECTED_COLOR),
+    RandomModeActive: DEFAULT_RANDOM_MODE_STATE
+};
 
 
 $(document).ready(function() {
-    var currentSqrtN = DEFAULT_SQRT_N;
-    var paintbrushRGBA = DEFAULT_PAINTBRUSH_RGBA;
-
-
-    // Get input objects
-    var $sqrtN = $("#sqrtN");
-    var $colorBox = $("#colorBox");
-    var $randomColor = $("#randomColor");
-    var $opacity = $("#opacity");
+    /* Get input HTML elements */
+    var $sqrtN       = $("#sqrtN");
+    var $colorBox    = $("#colorBox");
+    var $randomMode  = $("#randomMode");
+    var $opacity     = $("#opacity");
     var $clearButton = $("#clearButton");
 
+    var sketchboard = new Sketchboard($("#sketchContainer"));
 
-    // Set defaults
+
+    /* Set defaults */
     $sqrtN.val(DEFAULT_SQRT_N);
-    $colorBox.css("background-color", "#" + rgb2hex(DEFAULT_PAINTBRUSH_RGBA.r, DEFAULT_PAINTBRUSH_RGBA.g, DEFAULT_PAINTBRUSH_RGBA.b));
-    $randomColor.prop("checked", DEFAULT_RANDOM_STATE);
-    $opacity.val(100 * DEFAULT_PAINTBRUSH_RGBA.a + "%");
-    var $pixels = drawSketchboard(DEFAULT_SQRT_N, DEFAULT_PIXEL_RGBA, DEFAULT_PAINTBRUSH_RGBA);
+    $colorBox.paintCSS(Object.assign({}, DEFAULT_SELECTED_COLOR, {a:1}));  // Ignore opacity
+    $randomMode.prop("checked", DEFAULT_RANDOM_MODE_STATE);
+    $opacity.val(100 * DEFAULT_SELECTED_COLOR.a + "%");
+    for (var i = 0; i < DEFAULT_SQRT_N * DEFAULT_SQRT_N; i++) {
+        sketchboard.addPixel(new SketchPixel());
+    }
 
 
-    // Create new sketch board if $sqrtN is changed
+    /* Create new sketch board if $sqrtN is changed */
     $sqrtN.pressEnter(function() {
         var userInput = $sqrtN.val();
         if (isNaN(userInput) || userInput < 1 || userInput > 100) {
-            $sqrtN.val(currentSqrtN);
+            $sqrtN.val(Settings.SqrtN);
             return;
         }
 
-        currentSqrtN = Math.round(userInput);
-        $pixels.remove();
-        $pixels = drawSketchboard(currentSqrtN, DEFAULT_PIXEL_RGBA, paintbrushRGBA);
-        $sqrtN.val(currentSqrtN);
+        Settings.SqrtN = Math.round(userInput);
+        $sqrtN.val(Settings.SqrtN);
+
+        sketchboard.deletePixels();
+        for (var i = 0; i < Settings.SqrtN * Settings.SqrtN; i++) {
+            sketchboard.addPixel(new SketchPixel());
+        }
     });
 
 
-    // Attach ColorPicker to $colorBox
+    /* Attach ColorPicker to $colorBox */
     $colorBox.ColorPicker({
-        color: "#" + rgb2hex(DEFAULT_PAINTBRUSH_RGBA.r, DEFAULT_PAINTBRUSH_RGBA.g, DEFAULT_PAINTBRUSH_RGBA.b),
+        color: "#" + rgb2hex(Object.assign({}, Settings.Color, {a:1})),
 
         onShow: function(colpkr) {
             $(colpkr).fadeIn(100);
@@ -58,113 +71,42 @@ $(document).ready(function() {
 
         onChange: function(hsb, hex, rgb) {
             $colorBox.css("background-color", "#" + hex);
-            paintbrushRGBA.r = rgb.r;
-            paintbrushRGBA.g = rgb.g;
-            paintbrushRGBA.b = rgb.b;
+
+            // Overwrite Settings.Color's RGB properties but keep the A property
+            Object.assign(Settings.Color, rgb);
         }
     });
 
 
-    // Enable random colors if the $randomColor checkbox is active
-    $randomColor.change(function() {
-        RANDOM_MODE_ACTIVE = this.checked;
+    /* Enable random colors if the $randomMode checkbox is active */
+    $randomMode.change(function() {
+        Settings.RandomModeActive = this.checked;
     });
 
 
-    // Update the paintbrush's opacity if $opacity is changed
+    /* Update the selected color's opacity if $opacity is changed */
     $opacity.pressEnter(function() {
         var userInput = $opacity.val().replace(/\%$/, '');
         if (isNaN(userInput) || userInput < 1 || userInput > 100) {
-            $opacity.val(paintbrushRGBA.a * 100 + "%");
+            $opacity.val(Settings.Color.a * 100 + "%");
             return;
         }
 
-        paintbrushRGBA.a = Math.round(userInput) / 100;
+        Settings.Color.a = Math.round(userInput) / 100;
         $opacity.val(Math.round(userInput) + "%");
     });
 
     
-    // Clear the sketchboard if the $clearButton is pressed
+    /* Clear the sketchboard if the $clearButton is pressed */
     $clearButton.click(function() {
-        $pixels.css("background-color", "rgba("+DEFAULT_PIXEL_RGBA.r+","+DEFAULT_PIXEL_RGBA.g+","+DEFAULT_PIXEL_RGBA.b+","+DEFAULT_PIXEL_RGBA.a+")");
+        sketchboard.setPixelsColor(Object.assign({}, DEFAULT_PIXEL_COLOR));
     });
 });
 
 
-function drawSketchboard(sqrtN, pixelColor, paintbrushColor) {
-    // Create sqrtN^2 pixels
-    for (var i = 0; i < sqrtN * sqrtN; i++) {
-        var newPixel = "<div class='sketchPixel'></div>";
-        $("#sketchContainer").append(newPixel);
-    }
-    var $pixels = $(".sketchPixel");
-
-    // Resize pixels
-    $pixels.css("height", "calc(100% / " + sqrtN + ")");
-    $pixels.css("width", "calc(100% / " + sqrtN + ")");
-
-    // Color pixels
-    $pixels.css("background-color", "rgba("+pixelColor.r+","+pixelColor.g+","+pixelColor.b+","+pixelColor.a+")");
-
-    
-    // Enable painting behavior (change color on hover)
-    $pixels.mouseenter(function() {
-        paintPixel($(this), paintbrushColor);
-    });
-
-
-    return $pixels;
-}
-
-
-function paintPixel($pixel, paintbrushColor) {
-    if (RANDOM_MODE_ACTIVE) {
-        // Override paintbrushColor with a random color
-        paintbrushColor.r = getRandomIntInclusive(0, 255);
-        paintbrushColor.g = getRandomIntInclusive(0, 255);
-        paintbrushColor.b = getRandomIntInclusive(0, 255);
-
-        // Apply it to the colorBox
-        $("#colorBox").css("background-color", "#" + rgb2hex(paintbrushColor.r, paintbrushColor.g, paintbrushColor.b));
-    }
-
-    
-    // Get the current pixel color
-    var pixelCSS = $pixel.css("background-color");
-    var rgbArray = pixelCSS.match(/[0-9]+/g);
-    var pixelColor = {
-        r: rgbArray[0],
-        g: rgbArray[1],
-        b: rgbArray[2],
-        a: (rgbArray[3] !== undefined) ? rgbArray[3] : 1,
-    };
-
-    // Mix the current pixel color with the new one
-    var mixture = mixRGBA(pixelColor, paintbrushColor);
-
-    // Apply the color mixture to the CSS element
-    $pixel.css("background-color", "rgba("+mixture.r+","+mixture.g+","+mixture.b+","+mixture.a+")");
-}
-
-
-function mixRGBA(color1, color2) {
-// Source: Niet the Dark Absol, http://stackoverflow.com/a/26318627
-    return {
-        r: Math.round(color1.r * color1.a * (1 - color2.a)  +  color2.r * color2.a),
-        g: Math.round(color1.g * color1.a * (1 - color2.a)  +  color2.g * color2.a),
-        b: Math.round(color1.b * color1.a * (1 - color2.a)  +  color2.b * color2.a),
-        a: color1.a * (1 - color2.a) + color2.a
-    };
-}
-
-
-function rgb2hex(r, g, b) {
-// Source: Lance Vick, https://gist.github.com/lrvick/2080648
-    var bin = r << 16 | g << 8 | b;
-    return (function(h){
-            return new Array(7-h.length).join("0")+h;
-    })(bin.toString(16).toUpperCase());
-}
+$.fn.paintCSS = function(color) {
+    $(this).css("background-color", "rgba(" + Object.values(color).join() + ")");
+};
 
 
 $.fn.pressEnter = function(fn) {  
@@ -181,8 +123,10 @@ $.fn.pressEnter = function(fn) {
  };
 
 
-function getRandomIntInclusive(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+function rgb2hex(rgb) {
+// Source: Lance Vick, https://gist.github.com/lrvick/2080648
+    var bin = rgb.r << 16 | rgb.g << 8 | rgb.b;
+    return (function(h){
+            return new Array(7-h.length).join("0")+h;
+    })(bin.toString(16).toUpperCase());
 }

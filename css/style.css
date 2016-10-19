@@ -27,7 +27,6 @@ header {
     width: var(--pageWidth);
     margin: 30px auto;
     display: flex; display: -webkit-flex; display: -ms-flex;
-
     /*border: 2px solid blue;  /* DEBUG */
 }
 
@@ -133,13 +132,12 @@ h1 {
     
     display: flex; display: -webkit-flex; display: -ms-flex;
     flex-flow: row wrap;
-
     /* background-color: grey;  /* DEBUG */
 }
 
 .sketchPixel {
-    /* height: calc(100% / 16);  /* DEBUG */
-    /* width: calc(100% / 16);  /* DEBUG */
     background-color: rgba(255, 255, 255, 1);
     outline: 2px solid black;
+    /* height: calc(100% / 16);  /* DEBUG */
+    /* width: calc(100% / 16);  /* DEBUG */
 }
